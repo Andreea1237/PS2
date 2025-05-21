@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Control LED și Temperatura</title>
+    <script>
+        function actualizeazaTemperatura() {
+            fetch('/get_temperature')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('temperatura').innerText = data + ' °C';
+                })
+                .catch(error => console.error('Eroare la preluarea temperaturii:', error));
+        }
+
+        setInterval(actualizeazaTemperatura, 5000);
+        window.onload = actualizeazaTemperatura;
+    </script>
+</head>
+<body>
+    <h1>Panou de Control</h1>
+
+    <h3>Temperatura curentă: <span id="temperatura">--</span></h3>
+    <h3>LED: {{ led_state }}</h3>
+
+    <form method="post" action="/set_led">
+        <button type="submit" name="action" value="on">Pornește LED</button>
+        <button type="submit" name="action" value="off">Oprește LED</button>
+    </form>
+
+    <hr>
+
+    <h3>Trimite mesaj către microcontroller:</h3>
+    <form method="post" action="/send_message">
+        <input type="text" name="message" required>
+        <button type="submit">Trimite</button>
+    </form>
+
+    <h3>Mesaje recente:</h3>
+    <ul>
+        {% for msg in messages %}
+            <li>{{ msg }}</li>
+        {% else %}
+            <li>Nu există mesaje recente.</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h3>Evenimente de inundație:</h3>
+    <ul>
+        {% for event in flood_events %}
+            <li>
+                {{ event }}
+                <form method="post" action="/clear_flood_event" style="display:inline;">
+                    <input type="hidden" name="event_index" value="{{ loop.index0 }}">
+                    <button type="submit">Șterge</button>
+                </form>
+            </li>
+        {% else %}
+            <li>Nu există evenimente de inundație.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
